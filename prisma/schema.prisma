@@ -1,0 +1,214 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model inquiries {
+  id       String  @id @default(uuid())
+  fullname String
+  email    String
+  subject  String
+  message  String
+  state    Int
+  userId   String?
+  user     users?  @relation(fields: [userId], references: [id]) 
+}
+
+model users {
+  id         String       @id @default(uuid())
+  name       String
+  inquiries  inquiries[] //one staff can handle many inquires of customer
+  username   String
+  password   String
+  email      String
+  role       String
+  address    String
+  orders     orders[]
+  warranties warranties[] //one staff can hanle one or many warranty cases
+  articles   articles[]
+}
+
+model orders {
+  id          String        @id @default(uuid())
+  orderDate   DateTime
+  state       Int
+  totalAmount Decimal
+  userId      String
+  user        users         @relation(fields: [userId], references: [id])
+  order_items order_items[]
+}
+
+model order_items {
+  id        String    @id @default(uuid())
+  productId String
+  product   products  @relation(fields: [productId], references: [id])
+  quantity  Int
+  orderId   String
+  order     orders    @relation(fields: [orderId], references: [id])
+  returns   returns[]
+}
+
+model products {
+  id                  String                @id @default(uuid())
+  name                String
+  description         String
+  order_items         order_items[]
+  categoryId          String
+  category            categories            @relation(fields: [categoryId], references: [id])
+  sizeId              String
+  size                sizes                 @relation(fields: [sizeId], references: [id])
+  expireDate          DateTime
+  code                String
+  importPrice         Decimal
+  sellPrice           Decimal
+  product_promotions  product_promotions[]
+  product_images      product_images[]
+  articles            articles[]
+  product_inventories product_inventories[]
+  broken_inventories  broken_inventories[]
+}
+
+model categories {
+  id                  String                @id @default(uuid())
+  products            products[]
+  name                String
+  description         String
+  provider_categories provider_categories[]
+}
+
+model providers {
+  id                  String                @id @default(uuid())
+  contactNumber       String
+  name                String
+  provider_categories provider_categories[]
+}
+
+model warranties {
+  id               String            @id @default(uuid())
+  returnId         String
+  return           returns           @relation(fields: [returnId], references: [id])
+  state            Int
+  startDate        String
+  endDate          String
+  userId           String?
+  user             users?            @relation(fields: [userId], references: [id])
+  warrantyPolicyId String
+  warrantyPolicy   warranty_policies @relation(fields: [warrantyPolicyId], references: [id])
+}
+
+model warranty_policies {
+  id          String       @id @default(uuid())
+  warranties  warranties[]
+  name        String
+  duration    Int
+  description String
+  condition   String
+}
+
+model returns {
+  id             String       @id @default(uuid())
+  orderItemId    String
+  orderItem      order_items  @relation(fields: [orderItemId], references: [id])
+  returnDate     DateTime
+  reason         String
+  warranty_claim Boolean
+  warranties     warranties[] //some time user return because product is broken lead to product warranty
+}
+
+model promotions {
+  id                 String               @id @default(uuid())
+  name               String
+  startDate          DateTime
+  EndDate            DateTime
+  product_promotions product_promotions[]
+}
+
+model product_promotions {
+  id              String     @id @default(uuid())
+  productId       String
+  product         products   @relation(fields: [productId], references: [id])
+  promotionId     String
+  promotion       promotions @relation(fields: [promotionId], references: [id])
+  discountPercent Decimal
+  saleQuantity    Int
+}
+
+model product_images {
+  id        String   @id @default(uuid())
+  productId String
+  product   products @relation(fields: [productId], references: [id])
+  imageUrl  String
+  isMain    Boolean
+}
+
+model article_images {
+  id        String   @id @default(uuid())
+  articleId String
+  article   articles @relation(fields: [articleId], references: [id])
+  imageUrl  String
+}
+
+model articles {
+  id             String           @id @default(uuid())
+  article_images article_images[]
+  userId         String
+  user           users            @relation(fields: [userId], references: [id])
+  title          String
+  content        String
+  thumbContent   String
+  postDate       DateTime
+  productId      String
+  product        products         @relation(fields: [productId], references: [id])
+}
+
+model sizes {
+  id       String     @id @default(uuid())
+  products products[]
+  size     String
+  quantity Int
+}
+
+model inventories {
+  id                  String                @id @default(uuid())
+  location            String
+  product_inventories product_inventories[]
+}
+
+model product_inventories {
+  id          String       @id @default(uuid())
+  inventoryId String?
+  intentory   inventories? @relation(fields: [inventoryId], references: [id])
+  productId   String
+  product     products?    @relation(fields: [productId], references: [id])
+  quantity    Int
+}
+
+model broken_inventories {
+  id         String   @id @default(uuid())
+  productId  String
+  product    products @relation(fields: [productId], references: [id])
+  location   String
+  importDate DateTime
+  issue      String
+}
+
+model provider_categories {
+  id               String     @id @default(uuid())
+  providerId       String
+  provider         providers  @relation(fields: [providerId], references: [id])
+  categoryId       String
+  category         categories @relation(fields: [categoryId], references: [id])
+  providedQuantity Int
+  importPrice      Decimal
+  provideDate      DateTime
+}
