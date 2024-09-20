@@ -4,7 +4,9 @@ import { Product } from "../helper/MappingType";
 import prisma from "@/prisma/db";
 
 export class ProductRepository implements IRepository<Product> {
+    //Test new branch
     getAll(): Promise<Product[]> {
+        return prisma.products.findMany();
         throw new Error("Method not implemented.");
     }
     getById(id: string): Promise<Product | null> {
