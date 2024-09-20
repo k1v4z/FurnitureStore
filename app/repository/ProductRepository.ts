@@ -10,6 +10,7 @@ export class ProductRepository implements IRepository<Product> {
         throw new Error("Method not implemented.");
     }
     getById(id: string): Promise<Product | null> {
+        return prisma.products.findFirst();
         throw new Error("Method not implemented.");
     }
     create(item: Product): Promise<Product> {
