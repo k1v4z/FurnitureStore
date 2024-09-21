@@ -10,6 +10,7 @@ const Header = () => {
             <ul className='flex space-x-4'>
               <li><a href="#" className='hover:underline cursor-pointer font-serif'>Home 111111</a></li>
               <a href="">asdasds</a>
+              <a>ádasda</a>
             </ul>
           </nav>
         </div>
